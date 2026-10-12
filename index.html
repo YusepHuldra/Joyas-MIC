@@ -20,24 +20,69 @@
             overflow-x: hidden;
         }
 
-        /* --- BARRA DE CONTACTO SUPERIOR --- */
+        /* --- BARRA DE CONTACTO Y USUARIO SUPERIOR --- */
         .top-bar {
             background-color: #1a252f;
             border-bottom: 1px solid #2c3e50;
             padding: 0.5rem 2rem;
             font-size: 0.8rem;
-            text-align: right;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
-        .top-bar a {
+        .top-bar-links {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .top-bar-links a {
             color: #bdc3c7;
             text-decoration: none;
-            margin-left: 1.5rem;
             transition: color 0.3s ease;
         }
 
-        .top-bar a:hover {
+        .top-bar-links a:hover {
             color: #d4af37; /* Dorado */
+        }
+
+        .user-nav-status {
+            color: #bdc3c7;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .user-nav-status span {
+            color: #d4af37;
+            font-weight: 600;
+        }
+
+        .btn-user-action {
+            background: transparent;
+            border: 1px solid #d4af37;
+            color: #d4af37;
+            padding: 0.2rem 0.7rem;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 0.75rem;
+            transition: all 0.3s ease;
+        }
+
+        .btn-user-action:hover {
+            background-color: #d4af37;
+            color: #1a252f;
+        }
+
+        .btn-logout-user {
+            border-color: #ff4d4d;
+            color: #ff4d4d;
+        }
+
+        .btn-logout-user:hover {
+            background-color: #ff4d4d;
+            color: #ffffff;
         }
 
         /* --- HEADER & NAVEGACIÓN --- */
@@ -131,7 +176,7 @@
         .hero {
             text-align: center;
             padding: 5rem 2rem;
-            background: linear-gradient(rgba(255, 255, 255, 0.85), rgba(247, 249, 2fa, 1)), 
+            background: linear-gradient(rgba(255, 255, 255, 0.85), rgba(247, 249, 250, 1)), 
                         radial-gradient(circle at center, #ffffff 0%, #f1f2f6 100%);
             border-bottom: 1px solid #e2e8f0;
         }
@@ -403,7 +448,7 @@
         .cart-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-color: rgba(0,0,0,0.4); z-index: 1500; display: none; }
         .cart-overlay.open { display: block; }
 
-        /* --- MODAL DE LOGIN PARA ADMINISTRADOR --- */
+        /* --- MODALES EMERGENTES (LOGIN CLIENTE Y ADMIN) --- */
         .login-overlay {
             position: fixed;
             top: 0; left: 0;
@@ -427,14 +472,41 @@
             padding: 2.5rem;
             border-radius: 12px;
             width: 100%;
-            max-width: 380px;
+            max-width: 400px;
             box-shadow: 0 20px 40px rgba(0,0,0,0.1);
             position: relative;
         }
 
-        .login-box h3 { font-size: 1.4rem; color: #1a252f; margin-bottom: 1.5rem; text-align: center; letter-spacing: 1px; }
+        .login-box h3 { font-size: 1.4rem; color: #1a252f; margin-bottom: 1.2rem; text-align: center; letter-spacing: 1px; }
         .login-close { position: absolute; top: 15px; right: 15px; background: none; border: none; color: #94a3b8; font-size: 1.4rem; cursor: pointer; }
         .login-close:hover { color: #1a252f; }
+
+        /* Pestañas de Alternancia Usuario Login / Registro */
+        .auth-tabs {
+            display: flex;
+            border-bottom: 2px solid #e2e8f0;
+            margin-bottom: 1.5rem;
+        }
+
+        .auth-tab-btn {
+            flex: 1;
+            padding: 0.6rem;
+            background: none;
+            border: none;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #7f8c8d;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: all 0.3s ease;
+        }
+
+        .auth-tab-btn.active {
+            color: #1a252f;
+            border-bottom: 3px solid #d4af37;
+            margin-bottom: -2px;
+        }
 
         /* --- SECCIÓN PANEL DE ADMINISTRACIÓN --- */
         .admin-section {
@@ -480,10 +552,16 @@
 </head>
 <body>
 
-    <!-- Barra Superior -->
+    <!-- Barra Superior de Redes y Estado de Usuario -->
     <div class="top-bar">
-        <a href="https://www.facebook.com/profile.php?id=61586415724068&locale=es_LA" target="_blank">Facebook</a>
-        <a href="https://www.instagram.com/joyasmic/" target="_blank">Instagram</a>
+        <div class="user-nav-status" id="user-nav-status">
+            <span>👋 Bienvenido/a</span>
+            <button class="btn-user-action" onclick="openCustomerAuthModal('login')">Iniciar Sesión / Registrarse</button>
+        </div>
+        <div class="top-bar-links">
+            <a href="https://www.facebook.com/profile.php?id=61586415724068&locale=es_LA" target="_blank">Facebook</a>
+            <a href="https://www.instagram.com/joyasmic/" target="_blank">Instagram</a>
+        </div>
     </div>
 
     <!-- Encabezado -->
@@ -540,7 +618,53 @@
         <button class="btn-whatsapp-send" id="btn-whatsapp-send">Pedir por WhatsApp</button>
     </div>
 
-    <!-- MODAL EMERGENTE DE LOGIN -->
+    <!-- MODAL EMERGENTE DE REGISTRO / LOGIN DE CLIENTE -->
+    <div class="login-overlay" id="user-auth-overlay">
+        <div class="login-box">
+            <button class="login-close" id="close-user-auth-btn">&times;</button>
+            
+            <div class="auth-tabs">
+                <button class="auth-tab-btn active" id="tab-user-login-btn" onclick="switchAuthTab('login')">Ingresar</button>
+                <button class="auth-tab-btn" id="tab-user-register-btn" onclick="switchAuthTab('register')">Registrarse</button>
+            </div>
+
+            <!-- FORMULARIO INICIAR SESIÓN -->
+            <form id="user-login-form">
+                <h3>Inicia Sesión</h3>
+                <p style="font-size: 0.85rem; color: #64748b; text-align: center; margin-bottom: 1.2rem;">Inicia sesión para usar el carrito de compras.</p>
+                <div class="admin-form-group">
+                    <label>Correo Electrónico</label>
+                    <input type="email" id="user-login-email" placeholder="tuemail@ejemplo.com" required>
+                </div>
+                <div class="admin-form-group">
+                    <label>Contraseña</label>
+                    <input type="password" id="user-login-pass" placeholder="Ingresa tu contraseña" required>
+                </div>
+                <button type="submit" class="btn-save-product" style="margin-top:0.5rem;">Entrar a Mi Cuenta</button>
+            </form>
+
+            <!-- FORMULARIO REGISTRO -->
+            <form id="user-register-form" style="display: none;">
+                <h3>Crea tu Cuenta</h3>
+                <p style="font-size: 0.85rem; color: #64748b; text-align: center; margin-bottom: 1.2rem;">Regístrate para guardar tu carrito y realizar pedidos.</p>
+                <div class="admin-form-group">
+                    <label>Nombre Completo</label>
+                    <input type="text" id="user-reg-name" placeholder="Ej. Ana García" required>
+                </div>
+                <div class="admin-form-group">
+                    <label>Correo Electrónico</label>
+                    <input type="email" id="user-reg-email" placeholder="tuemail@ejemplo.com" required>
+                </div>
+                <div class="admin-form-group">
+                    <label>Contraseña</label>
+                    <input type="password" id="user-reg-pass" placeholder="Crea una contraseña" required>
+                </div>
+                <button type="submit" class="btn-save-product" style="margin-top:0.5rem;">Registrarme</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL EMERGENTE DE LOGIN PARA ADMINISTRADOR -->
     <div class="login-overlay" id="login-overlay">
         <div class="login-box">
             <button class="login-close" id="close-login-btn">&times;</button>
@@ -564,7 +688,7 @@
         <div class="admin-container">
             <div class="admin-header-flex">
                 <h2 class="catalog-title" style="margin-bottom:0; text-align:left;">Panel Administrador</h2>
-                <button class="btn-logout" onclick="logoutAdmin()">Cerrar Sesión</button>
+                <button class="btn-logout" onclick="logoutAdmin()">Cerrar Sesión Admin</button>
             </div>
             <form id="admin-form">
                 <div class="admin-form-group">
@@ -646,7 +770,11 @@
         let customProducts = JSON.parse(localStorage.getItem('joyasmic_products')) || [];
         let cart = [];
         let adminMode = sessionStorage.getItem('joyasmic_logged') === 'true';
-        let currentCategoryFilter = "Todos"; // Estado para recordar el apartado activo
+        let currentCategoryFilter = "Todos";
+
+        // Usuarios y Sesión de Clientes
+        let registeredUsers = JSON.parse(localStorage.getItem('joyasmic_users')) || [];
+        let currentUser = JSON.parse(sessionStorage.getItem('joyasmic_current_user')) || null;
 
         // Elementos del DOM
         const gridProducts = document.getElementById('grid-products-container');
@@ -666,18 +794,123 @@
         const btnAdminAccess = document.getElementById('btn-admin-access');
         const btnCloseLogin = document.getElementById('close-login-btn');
 
+        // Modal de Registro/Login de Usuario
+        const userAuthOverlay = document.getElementById('user-auth-overlay');
+        const closeUserAuthBtn = document.getElementById('close-user-auth-btn');
+        const userLoginForm = document.getElementById('user-login-form');
+        const userRegisterForm = document.getElementById('user-register-form');
+        const tabUserLoginBtn = document.getElementById('tab-user-login-btn');
+        const tabUserRegisterBtn = document.getElementById('tab-user-register-btn');
+        const userNavStatus = document.getElementById('user-nav-status');
+
+        // --- MANEJO DE AUTENTICACIÓN DE CLIENTES ---
+        function updateCustomerHeader() {
+            if (currentUser) {
+                userNavStatus.innerHTML = `
+                    <span>👤 Hola, ${currentUser.name}</span>
+                    <button class="btn-user-action btn-logout-user" onclick="logoutCustomer()">Cerrar Sesión</button>
+                `;
+            } else {
+                userNavStatus.innerHTML = `
+                    <span>👋 Bienvenido/a</span>
+                    <button class="btn-user-action" onclick="openCustomerAuthModal('login')">Iniciar Sesión / Registrarse</button>
+                `;
+            }
+        }
+
+        window.openCustomerAuthModal = function(mode = 'login') {
+            userAuthOverlay.classList.add('open');
+            switchAuthTab(mode);
+        };
+
+        closeUserAuthBtn.addEventListener('click', () => {
+            userAuthOverlay.classList.remove('open');
+        });
+
+        window.switchAuthTab = function(mode) {
+            if (mode === 'login') {
+                tabUserLoginBtn.classList.add('active');
+                tabUserRegisterBtn.classList.remove('active');
+                userLoginForm.style.display = 'block';
+                userRegisterForm.style.display = 'none';
+            } else {
+                tabUserRegisterBtn.classList.add('active');
+                tabUserLoginBtn.classList.remove('active');
+                userRegisterForm.style.display = 'block';
+                userLoginForm.style.display = 'none';
+            }
+        };
+
+        // Registro de Usuario
+        userRegisterForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const name = document.getElementById('user-reg-name').value.trim();
+            const email = document.getElementById('user-reg-email').value.trim().toLowerCase();
+            const password = document.getElementById('user-reg-pass').value;
+
+            const existingUser = registeredUsers.find(u => u.email === email);
+            if (existingUser) {
+                alert('Este correo ya está registrado. Intenta iniciar sesión.');
+                switchAuthTab('login');
+                return;
+            }
+
+            const newUser = { name, email, password };
+            registeredUsers.push(newUser);
+            localStorage.setItem('joyasmic_users', JSON.stringify(registeredUsers));
+
+            currentUser = { name: newUser.name, email: newUser.email };
+            sessionStorage.setItem('joyasmic_current_user', JSON.stringify(currentUser));
+
+            userRegisterForm.reset();
+            userAuthOverlay.classList.remove('open');
+            updateCustomerHeader();
+            alert(`¡Registro exitoso! Bienvenido/a ${currentUser.name}`);
+        });
+
+        // Login de Usuario
+        userLoginForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const email = document.getElementById('user-login-email').value.trim().toLowerCase();
+            const password = document.getElementById('user-login-pass').value;
+
+            const userFound = registeredUsers.find(u => u.email === email && u.password === password);
+
+            if (userFound) {
+                currentUser = { name: userFound.name, email: userFound.email };
+                sessionStorage.setItem('joyasmic_current_user', JSON.stringify(currentUser));
+                userLoginForm.reset();
+                userAuthOverlay.classList.remove('open');
+                updateCustomerHeader();
+            } else {
+                alert('Correo o contraseña incorrectos. Verifica tus datos o regístrate.');
+            }
+        });
+
+        // Función para Cerrar Sesión del Cliente
+        window.logoutCustomer = function() {
+            currentUser = null;
+            sessionStorage.removeItem('joyasmic_current_user');
+            cart = [];
+            updateCartUI();
+            updateCustomerHeader();
+            
+            // Cerrar la barra del carrito si estaba abierta
+            cartSidebar.classList.remove('open');
+            cartOverlay.classList.remove('open');
+        };
+
         // --- MANEJO DE APARTADOS (FILTRADO) ---
         window.filterCategory = function(category, buttonElement) {
             currentCategoryFilter = category;
             
-            // Cambiar clase active en los botones
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
             buttonElement.classList.add('active');
             
             renderCatalog();
         };
 
-        // --- COMPORTAMIENTO LOGIN ---
+        // --- COMPORTAMIENTO LOGIN ADMINISTRADOR ---
         btnAdminAccess.addEventListener('click', () => {
             if (adminMode) {
                 adminPanel.scrollIntoView({ behavior: 'smooth' });
@@ -730,7 +963,6 @@
             gridProducts.innerHTML = '';
             let allProducts = [...DEFAULT_PRODUCTS, ...customProducts];
 
-            // Aplicar el filtro del apartado seleccionado
             if (currentCategoryFilter !== "Todos") {
                 allProducts = allProducts.filter(p => p.category === currentCategoryFilter);
             }
@@ -766,7 +998,6 @@
                 gridProducts.appendChild(card);
             });
 
-            // Eventos de clic para agregar de forma segura
             document.querySelectorAll('.btn-add-to-cart').forEach(button => {
                 button.addEventListener('click', () => {
                     const prodId = button.getAttribute('data-id');
@@ -823,15 +1054,30 @@
 
         // --- FUNCIONES DEL CARRITO ---
         function toggleCart() {
+            if (!currentUser) {
+                openCustomerAuthModal('login');
+                return;
+            }
             cartSidebar.classList.toggle('open');
             cartOverlay.classList.toggle('open');
         }
 
         openCartBtn.addEventListener('click', toggleCart);
-        closeCartBtn.addEventListener('click', toggleCart);
-        cartOverlay.addEventListener('click', toggleCart);
+        closeCartBtn.addEventListener('click', () => {
+            cartSidebar.classList.remove('open');
+            cartOverlay.classList.remove('open');
+        });
+        cartOverlay.addEventListener('click', () => {
+            cartSidebar.classList.remove('open');
+            cartOverlay.classList.remove('open');
+        });
 
         window.addToCart = function(name, price) {
+            if (!currentUser) {
+                openCustomerAuthModal('login');
+                return;
+            }
+
             const existingItem = cart.find(item => item.name === name);
             if (existingItem) {
                 existingItem.quantity += 1;
@@ -896,7 +1142,7 @@
                 return;
             }
 
-            let message = "Hola Joyas Mic, me gustaría consultar la disponibilidad de las siguientes piezas:\n\n";
+            let message = `Hola Joyas Mic, me llamo *${currentUser.name}* (${currentUser.email}) y me gustaría consultar la disponibilidad de las siguientes piezas:\n\n`;
             let total = 0;
 
             cart.forEach(item => {
@@ -913,6 +1159,7 @@
 
         // Carga Inicial
         checkAdminView();
+        updateCustomerHeader();
         renderCatalog();
         updateCartUI();
     </script>
